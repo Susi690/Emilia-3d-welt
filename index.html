@@ -3,181 +3,566 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Emilias 3D-Welt</title>
+<meta name="theme-color" content="#d9c6ff">
+<title>Emilias 3D-Welt – Version 2</title>
 <style>
-*{box-sizing:border-box;-webkit-user-select:none;user-select:none}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#bfe9ff}
+:root{
+  --pink:#ec74bc;
+  --purple:#865fd2;
+  --ink:#68487e;
+  --white:#fff;
+}
+*{box-sizing:border-box;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#bfe9ff}
+button{font:inherit;cursor:pointer}
 canvas{display:block}
-#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(#ffd9f2,#d9c6ff);z-index:20;color:#74439a;text-align:center;padding:30px}
+.hidden{display:none!important}
+
+#startScreen{
+  position:fixed;inset:0;z-index:30;
+  display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(circle at 15% 20%,#fff5fb,transparent 25%),
+    radial-gradient(circle at 85% 15%,#efe7ff,transparent 25%),
+    linear-gradient(160deg,#ffd8ef,#d6c9ff);
+  padding:20px;overflow:auto
+}
+.startCard{
+  width:min(94vw,720px);
+  background:rgba(255,255,255,.95);
+  border:5px solid #fff;
+  border-radius:32px;
+  box-shadow:0 18px 45px #5f3f7b33;
+  padding:24px;
+  text-align:center;
+}
+.startCard h1{margin:0;color:var(--purple);font-size:clamp(30px,7vw,52px)}
+.startCard p{color:var(--ink);font-size:17px;line-height:1.45}
+.previewWrap{
+  display:grid;grid-template-columns:220px 1fr;gap:22px;align-items:center;margin-top:18px
+}
+#avatarPreview{
+  width:220px;height:300px;border-radius:26px;
+  background:linear-gradient(#bfeaff 0 63%,#9bdd7c 63%);
+  position:relative;overflow:hidden;border:4px solid #fff;
+  box-shadow:0 10px 24px #0002;
+}
+.previewPerson{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:120px;height:245px}
+.previewHead{position:absolute;left:30px;top:15px;width:60px;height:60px;border-radius:50%;background:#f2c3a1;z-index:3}
+.previewHairBack{position:absolute;left:24px;top:7px;width:72px;height:84px;border-radius:48% 48% 42% 42%;background:#5b3429;z-index:1}
+.previewEye{position:absolute;top:39px;width:6px;height:6px;border-radius:50%;background:#2d201c;z-index:4}
+.previewEye.left{left:46px}.previewEye.right{left:68px}
+.previewBody{position:absolute;left:27px;top:78px;width:66px;height:82px;border-radius:28px;background:#e783c4;z-index:2}
+.previewArm{position:absolute;top:84px;width:18px;height:88px;border-radius:12px;background:#f2c3a1}
+.previewArm.left{left:10px;transform:rotate(7deg)}.previewArm.right{right:10px;transform:rotate(-7deg)}
+.previewLeg{position:absolute;top:150px;width:24px;height:82px;border-radius:12px;background:#7557b5}
+.previewLeg.left{left:31px}.previewLeg.right{right:31px}
+.previewShoe{position:absolute;top:219px;width:31px;height:17px;border-radius:12px 12px 7px 7px;background:#fff}
+.previewShoe.left{left:25px}.previewShoe.right{right:25px}
+
+.options{text-align:left}
+.optionGroup{margin-bottom:16px}
+.optionGroup strong{display:block;color:var(--ink);margin-bottom:8px}
+.choiceRow{display:flex;flex-wrap:wrap;gap:9px}
+.choice{
+  width:48px;height:48px;border-radius:16px;border:3px solid #fff;
+  box-shadow:0 3px 10px #0002;background:#eee
+}
+.choice.active{outline:4px solid #8a64d8}
+.styleButton{
+  border:none;background:#f1e8ff;color:#69458c;padding:10px 13px;border-radius:15px;font-weight:800
+}
+.styleButton.active{background:linear-gradient(135deg,#9d6ee0,#eb78bd);color:#fff}
+#startGame{
+  margin-top:15px;border:none;color:#fff;font-size:21px;font-weight:900;
+  padding:15px 32px;border-radius:999px;
+  background:linear-gradient(135deg,var(--purple),var(--pink));
+  box-shadow:0 8px 20px #8c57bc55
+}
+
+#loading{
+  position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;
+  background:linear-gradient(#ffd9f2,#d9c6ff);z-index:25;color:#74439a;text-align:center;padding:30px
+}
 #loading h1{font-size:clamp(30px,8vw,60px);margin:0 0 10px}
-#loading p{font-size:18px}
-#hud{position:fixed;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
-.badge{background:rgba(255,255,255,.88);padding:10px 16px;border-radius:22px;color:#74439a;font-weight:800;box-shadow:0 4px 15px #0002}
-#joystick{position:fixed;left:24px;bottom:28px;width:130px;height:130px;border-radius:50%;background:#fff8;border:3px solid #fff;z-index:7;touch-action:none;box-shadow:0 5px 20px #0002}
-#stick{position:absolute;width:58px;height:58px;left:33px;top:33px;border-radius:50%;background:linear-gradient(135deg,#e16bc5,#8d67d5);box-shadow:0 4px 12px #0003}
-#hint{position:fixed;bottom:25px;right:20px;background:#fff9;border-radius:20px;padding:10px 14px;color:#6b477f;font-weight:bold;z-index:5}
-#message{position:fixed;left:50%;top:90px;transform:translateX(-50%);background:#fff;border-radius:20px;padding:12px 20px;color:#754394;font-weight:bold;z-index:8;opacity:0;transition:.3s;box-shadow:0 5px 20px #0002;white-space:nowrap}
-@media (pointer:fine){#joystick{opacity:.72}}
+
+#hud{
+  position:fixed;top:14px;left:14px;right:14px;
+  display:flex;justify-content:space-between;align-items:flex-start;
+  z-index:5;pointer-events:none;gap:10px
+}
+.badge{
+  background:rgba(255,255,255,.9);padding:10px 15px;border-radius:20px;
+  color:#74439a;font-weight:900;box-shadow:0 4px 15px #0002
+}
+#emiliaButton{pointer-events:auto;border:none}
+#joystick{
+  position:fixed;left:24px;bottom:28px;width:130px;height:130px;border-radius:50%;
+  background:#fff8;border:3px solid #fff;z-index:7;touch-action:none;box-shadow:0 5px 20px #0002
+}
+#stick{
+  position:absolute;width:58px;height:58px;left:33px;top:33px;border-radius:50%;
+  background:linear-gradient(135deg,#e16bc5,#8d67d5);box-shadow:0 4px 12px #0003
+}
+#hint{
+  position:fixed;bottom:25px;right:20px;background:#fff9;border-radius:20px;padding:10px 14px;
+  color:#6b477f;font-weight:bold;z-index:5;max-width:210px;text-align:center
+}
+#message{
+  position:fixed;left:50%;top:86px;transform:translateX(-50%);
+  background:#fff;border-radius:20px;padding:12px 20px;color:#754394;font-weight:bold;
+  z-index:8;opacity:0;transition:.3s;box-shadow:0 5px 20px #0002;white-space:nowrap
+}
+#profilePanel{
+  position:fixed;inset:0;z-index:15;background:#0006;
+  display:flex;align-items:center;justify-content:center;padding:18px
+}
+.profileCard{
+  width:min(92vw,520px);background:#fff;border-radius:28px;padding:22px;
+  box-shadow:0 18px 45px #0004;text-align:center
+}
+.profileCard h2{margin:0;color:var(--purple)}
+.profileGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:15px}
+.profileTile{background:#f4edff;border-radius:18px;padding:14px;font-weight:800;color:var(--ink)}
+.closeButton{
+  margin-top:17px;border:none;border-radius:999px;padding:12px 24px;color:#fff;font-weight:900;
+  background:linear-gradient(135deg,var(--purple),var(--pink))
+}
+@media(max-width:650px){
+  .previewWrap{grid-template-columns:1fr}
+  #avatarPreview{margin:auto;width:190px;height:250px}
+  .previewPerson{transform:translateX(-50%) scale(.82);transform-origin:bottom}
+  .startCard{padding:18px}
+  #hint{font-size:12px;max-width:155px}
+}
+@media(pointer:fine){#joystick{opacity:.75}}
 </style>
 </head>
 <body>
+
+<section id="startScreen">
+  <div class="startCard">
+    <h1>🌈 Emilias 3D-Welt</h1>
+    <p>Gestalte Emilia und starte danach in ihre eigene Spielwelt.</p>
+
+    <div class="previewWrap">
+      <div id="avatarPreview">
+        <div class="previewPerson">
+          <div id="previewHair" class="previewHairBack"></div>
+          <div id="previewHead" class="previewHead"></div>
+          <div class="previewEye left"></div>
+          <div class="previewEye right"></div>
+          <div id="previewBody" class="previewBody"></div>
+          <div id="previewArmL" class="previewArm left"></div>
+          <div id="previewArmR" class="previewArm right"></div>
+          <div id="previewLegL" class="previewLeg left"></div>
+          <div id="previewLegR" class="previewLeg right"></div>
+          <div id="previewShoeL" class="previewShoe left"></div>
+          <div id="previewShoeR" class="previewShoe right"></div>
+        </div>
+      </div>
+
+      <div class="options">
+        <div class="optionGroup">
+          <strong>Hautfarbe</strong>
+          <div class="choiceRow">
+            <button class="choice skinChoice active" data-color="#f2c3a1" style="background:#f2c3a1"></button>
+            <button class="choice skinChoice" data-color="#d99a72" style="background:#d99a72"></button>
+            <button class="choice skinChoice" data-color="#a96747" style="background:#a96747"></button>
+            <button class="choice skinChoice" data-color="#6f412f" style="background:#6f412f"></button>
+          </div>
+        </div>
+
+        <div class="optionGroup">
+          <strong>Haare</strong>
+          <div class="choiceRow">
+            <button class="choice hairChoice active" data-color="#5b3429" style="background:#5b3429"></button>
+            <button class="choice hairChoice" data-color="#d7aa59" style="background:#d7aa59"></button>
+            <button class="choice hairChoice" data-color="#2f241f" style="background:#2f241f"></button>
+            <button class="choice hairChoice" data-color="#a55735" style="background:#a55735"></button>
+          </div>
+        </div>
+
+        <div class="optionGroup">
+          <strong>Oberteil</strong>
+          <div class="choiceRow">
+            <button class="choice shirtChoice active" data-color="#e783c4" style="background:#e783c4"></button>
+            <button class="choice shirtChoice" data-color="#8f72d8" style="background:#8f72d8"></button>
+            <button class="choice shirtChoice" data-color="#72b9e8" style="background:#72b9e8"></button>
+            <button class="choice shirtChoice" data-color="#f0b65c" style="background:#f0b65c"></button>
+          </div>
+        </div>
+
+        <div class="optionGroup">
+          <strong>Hose</strong>
+          <div class="choiceRow">
+            <button class="choice pantsChoice active" data-color="#7557b5" style="background:#7557b5"></button>
+            <button class="choice pantsChoice" data-color="#3d6896" style="background:#3d6896"></button>
+            <button class="choice pantsChoice" data-color="#34353c" style="background:#34353c"></button>
+            <button class="choice pantsChoice" data-color="#e18aab" style="background:#e18aab"></button>
+          </div>
+        </div>
+
+        <div class="optionGroup">
+          <strong>Frisur</strong>
+          <div class="choiceRow">
+            <button class="styleButton active" data-hair="long">Lang</button>
+            <button class="styleButton" data-hair="bob">Bob</button>
+            <button class="styleButton" data-hair="bun">Dutt</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button id="startGame">Ab in die Welt! 🎮</button>
+  </div>
+</section>
+
 <div id="loading"><h1>🌈 Emilias 3D-Welt</h1><p>Die Spielwelt wird geladen … 👧🏻🐶👩🏻</p></div>
-<div id="hud"><div class="badge">👧🏻 Emilia</div><div class="badge">⭐ <span id="stars">0</span> &nbsp; 🪙 <span id="coins">100</span></div></div>
+
+<div id="hud" class="hidden">
+  <button id="emiliaButton" class="badge">👧🏻 Emilia</button>
+  <div class="badge">⭐ <span id="stars">0</span> &nbsp; 🪙 <span id="coins">100</span></div>
+</div>
+
 <div id="message"></div>
-<div id="joystick"><div id="stick"></div></div>
-<div id="hint">Mac: WASD / Pfeile · iPhone: Joystick 🎮</div>
+<div id="joystick" class="hidden"><div id="stick"></div></div>
+<div id="hint" class="hidden">Mac: WASD / Pfeile<br>iPhone: Joystick 🎮</div>
+
+<div id="profilePanel" class="hidden">
+  <div class="profileCard">
+    <h2>👧🏻 Meine Emilia</h2>
+    <p>Hier kann Emilia später Kleidung, Frisuren und Aufgaben verwalten.</p>
+    <div class="profileGrid">
+      <div class="profileTile">👗 Kleidung</div>
+      <div class="profileTile">💇🏻‍♀️ Frisur</div>
+      <div class="profileTile">🎒 Inventar</div>
+      <div class="profileTile">📋 Aufgaben</div>
+    </div>
+    <button id="closeProfile" class="closeButton">Zurück ins Spiel</button>
+  </div>
+</div>
 
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js';
 
-const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9edfff);
-scene.fog=new THREE.Fog(0x9edfff,45,105);
+const avatar = {
+  skin: '#f2c3a1',
+  hair: '#5b3429',
+  shirt: '#e783c4',
+  pants: '#7557b5',
+  hairStyle: 'long'
+};
 
-const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,200);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-document.body.prepend(renderer.domElement);
+const savedAvatar = localStorage.getItem('emilia3dAvatar');
+if (savedAvatar) Object.assign(avatar, JSON.parse(savedAvatar));
 
-scene.add(new THREE.HemisphereLight(0xffffff,0x7cba63,2.4));
-const sun=new THREE.DirectionalLight(0xffffff,2.8);
-sun.position.set(25,35,15); sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024);
-scene.add(sun);
+const $ = id => document.getElementById(id);
 
-const mat=(color)=>new THREE.MeshStandardMaterial({color,roughness:.8});
-function box(w,h,d,color,x,y,z){
- const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
- m.position.set(x,y,z); m.castShadow=m.receiveShadow=true; scene.add(m); return m;
-}
-function sphere(r,color,x,y,z){
- const m=new THREE.Mesh(new THREE.SphereGeometry(r,24,18),mat(color));
- m.position.set(x,y,z); m.castShadow=true; scene.add(m); return m;
-}
+function selectChoice(selector, key, previewIds){
+  document.querySelectorAll(selector).forEach(btn=>{
+    if(btn.dataset.color === avatar[key]) btn.classList.add('active');
+    else btn.classList.remove('active');
 
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(180,180),mat(0x8fd06b));
-ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; scene.add(ground);
-
-// Wege
-box(9,.06,100,0xf4d8ad,0,.03,0);
-box(70,.06,7,0xf4d8ad,0,.04,-18);
-
-// Traumhaus
-box(16,8,12,0xffd3e8,-19,4,-25);
-const roof=new THREE.Mesh(new THREE.ConeGeometry(12,6,4),mat(0xa86892));
-roof.position.set(-19,11,-25); roof.rotation.y=Math.PI/4; roof.castShadow=true; scene.add(roof);
-box(3,5,.3,0x8e5c4a,-19,2.5,-18.85);
-box(3,3,.25,0x9ee8ff,-24,5,-18.8);
-box(3,3,.25,0x9ee8ff,-14,5,-18.8);
-
-// Hundeladen
-box(15,7,11,0xcab8ff,20,3.5,-25);
-box(17,1.2,13,0x8c6ac7,20,7.6,-25);
-box(5,4,.3,0x9ee8ff,20,3,-19.35);
-
-// Bäume
-function tree(x,z){
- box(1.1,5,1.1,0x8b5a38,x,2.5,z);
- sphere(3.3,0x4f9d52,x,6,z);
- sphere(2.4,0x68b85e,x-2,5.7,z);
- sphere(2.4,0x68b85e,x+2,5.8,z);
-}
-[[-12,5],[15,7],[-25,8],[28,4],[-32,-8],[34,-12],[-35,-38],[36,-38]].forEach(p=>tree(...p));
-
-// Blumen
-for(let i=0;i<35;i++){
- const x=(Math.random()-.5)*75,z=(Math.random()-.5)*75;
- if(Math.abs(x)>7){
-   box(.18,.7,.18,0x3f9c52,x,.35,z);
-   sphere(.35,[0xff75b5,0xffdf69,0xffffff,0xa87be8][i%4],x,.85,z);
- }
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll(selector).forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      avatar[key]=btn.dataset.color;
+      previewIds.forEach(id=>$(id).style.background=avatar[key]);
+      localStorage.setItem('emilia3dAvatar',JSON.stringify(avatar));
+    });
+  });
+  previewIds.forEach(id=>$(id).style.background=avatar[key]);
 }
 
-// Emilia als 3D-Figur
-const player=new THREE.Group();
-const skin=mat(0xf2c3a1), hair=mat(0x4b2d24), shirt=mat(0xe783c4), jeans=mat(0x7557b5), white=mat(0xffffff);
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.72,1.3,6,12),shirt); body.position.y=2.25; body.castShadow=true; player.add(body);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.78,24,18),skin); head.position.y=3.75; head.castShadow=true; player.add(head);
-const hairBack=new THREE.Mesh(new THREE.SphereGeometry(.83,24,18),hair); hairBack.position.set(0,.08,-.18); head.add(hairBack);
-const face=new THREE.Mesh(new THREE.SphereGeometry(.7,24,18,0,Math.PI*2,0,Math.PI*.62),skin); face.position.set(0,0,.27); head.add(face);
-function eye(x){const e=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),mat(0x35231f));e.position.set(x,.12,.69);head.add(e)}
-eye(-.25);eye(.25);
-for(const x of [-.45,.45]){const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.18,1.05,5,8),skin);arm.position.set(x,2.15,0);player.add(arm)}
-for(const x of [-.3,.3]){const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.22,1.1,5,8),jeans);leg.position.set(x,.75,0);player.add(leg)}
-player.position.set(0,0,15); scene.add(player);
+selectChoice('.skinChoice','skin',['previewHead','previewArmL','previewArmR']);
+selectChoice('.hairChoice','hair',['previewHair']);
+selectChoice('.shirtChoice','shirt',['previewBody']);
+selectChoice('.pantsChoice','pants',['previewLegL','previewLegR']);
 
-// Polly als kleine Figur am Haus
-const polly=new THREE.Group();
-const pb=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,16),mat(0xd6a47b));pb.scale.set(1.2,.8,1.45);pb.position.y=1.05;polly.add(pb);
-const ph=new THREE.Mesh(new THREE.SphereGeometry(.82,20,16),mat(0xe2b68f));ph.position.set(0,1.65,.95);polly.add(ph);
-for(const x of [-.52,.52]){const ear=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,12),mat(0x8d5d43));ear.position.set(x,2.25,.92);ear.rotation.z=x<0?.3:-.3;polly.add(ear)}
-polly.position.set(-12,0,-15); scene.add(polly);
-
-camera.position.set(0,9,24);
-let keys={},joy={x:0,y:0},velocity=new THREE.Vector3(),walk=0;
-addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
-addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-const joyEl=document.getElementById('joystick'),stick=document.getElementById('stick');
-function joyMove(e){
- const t=e.touches?e.touches[0]:e, r=joyEl.getBoundingClientRect();
- let x=t.clientX-(r.left+r.width/2),y=t.clientY-(r.top+r.height/2);
- const max=42,l=Math.hypot(x,y)||1;if(l>max){x=x/l*max;y=y/l*max}
- joy.x=x/max;joy.y=y/max;stick.style.transform=`translate(${x}px,${y}px)`;
+function updateHairPreview(){
+  const hair=$('previewHair');
+  hair.style.borderRadius=avatar.hairStyle==='bob'?'48% 48% 35% 35%':
+                          avatar.hairStyle==='bun'?'50%':'48% 48% 42% 42%';
+  hair.style.height=avatar.hairStyle==='bob'?'68px':avatar.hairStyle==='bun'?'66px':'84px';
 }
-function joyEnd(){joy.x=joy.y=0;stick.style.transform='translate(0,0)'}
-joyEl.addEventListener('touchstart',joyMove,{passive:false});
-joyEl.addEventListener('touchmove',e=>{e.preventDefault();joyMove(e)},{passive:false});
-joyEl.addEventListener('touchend',joyEnd);
-joyEl.addEventListener('pointerdown',e=>{joyEl.setPointerCapture(e.pointerId);joyMove(e)});
-joyEl.addEventListener('pointermove',e=>{if(e.buttons)joyMove(e)});
-joyEl.addEventListener('pointerup',joyEnd);
+document.querySelectorAll('.styleButton').forEach(btn=>{
+  btn.classList.toggle('active',btn.dataset.hair===avatar.hairStyle);
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.styleButton').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    avatar.hairStyle=btn.dataset.hair;
+    updateHairPreview();
+    localStorage.setItem('emilia3dAvatar',JSON.stringify(avatar));
+  });
+});
+updateHairPreview();
 
-function notify(text){const m=document.getElementById('message');m.textContent=text;m.style.opacity=1;clearTimeout(window.mt);window.mt=setTimeout(()=>m.style.opacity=0,1800)}
-let lastZone='';
-function zones(){
- let zone='';
- if(player.position.distanceTo(new THREE.Vector3(-19,0,-18))<8)zone='🏡 Willkommen am Traumhaus!';
- if(player.position.distanceTo(new THREE.Vector3(20,0,-19))<8)zone='🐾 Willkommen beim Hundeladen!';
- if(player.position.distanceTo(polly.position)<5)zone='🐶 Polly freut sich, Emilia zu sehen!';
- if(zone&&zone!==lastZone)notify(zone);
- lastZone=zone;
+$('emiliaButton').onclick=()=>$('profilePanel').classList.remove('hidden');
+$('closeProfile').onclick=()=>$('profilePanel').classList.add('hidden');
+
+$('startGame').onclick=()=>{
+  localStorage.setItem('emilia3dAvatar',JSON.stringify(avatar));
+  $('startScreen').classList.add('hidden');
+  $('loading').style.display='flex';
+  startWorld();
+};
+
+function startWorld(){
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x9edfff);
+  scene.fog=new THREE.Fog(0x9edfff,50,115);
+
+  const camera=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,220);
+  const renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setSize(innerWidth,innerHeight);
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  renderer.shadowMap.enabled=true;
+  renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  document.body.prepend(renderer.domElement);
+
+  scene.add(new THREE.HemisphereLight(0xffffff,0x7cba63,2.5));
+  const sun=new THREE.DirectionalLight(0xffffff,2.8);
+  sun.position.set(25,35,15);
+  sun.castShadow=true;
+  sun.shadow.mapSize.set(1024,1024);
+  scene.add(sun);
+
+  const mat=color=>new THREE.MeshStandardMaterial({color,roughness:.82});
+  const box=(w,h,d,color,x,y,z)=>{
+    const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat(color));
+    m.position.set(x,y,z);m.castShadow=m.receiveShadow=true;scene.add(m);return m;
+  };
+  const sphere=(r,color,x,y,z)=>{
+    const m=new THREE.Mesh(new THREE.SphereGeometry(r,24,18),mat(color));
+    m.position.set(x,y,z);m.castShadow=true;scene.add(m);return m;
+  };
+
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(190,190),mat(0x8fd06b));
+  ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+
+  box(9,.06,112,0xf4d8ad,0,.03,0);
+  box(76,.06,7,0xf4d8ad,0,.04,-18);
+
+  box(16,8,12,0xffd3e8,-19,4,-25);
+  const roof=new THREE.Mesh(new THREE.ConeGeometry(12,6,4),mat(0xa86892));
+  roof.position.set(-19,11,-25);roof.rotation.y=Math.PI/4;roof.castShadow=true;scene.add(roof);
+  box(3,5,.3,0x8e5c4a,-19,2.5,-18.85);
+  box(3,3,.25,0x9ee8ff,-24,5,-18.8);
+  box(3,3,.25,0x9ee8ff,-14,5,-18.8);
+
+  box(15,7,11,0xcab8ff,20,3.5,-25);
+  box(17,1.2,13,0x8c6ac7,20,7.6,-25);
+  box(5,4,.3,0x9ee8ff,20,3,-19.35);
+
+  function tree(x,z){
+    box(1.1,5,1.1,0x8b5a38,x,2.5,z);
+    sphere(3.3,0x4f9d52,x,6,z);
+    sphere(2.4,0x68b85e,x-2,5.7,z);
+    sphere(2.4,0x68b85e,x+2,5.8,z);
+  }
+  [[-12,5],[15,7],[-25,8],[28,4],[-32,-8],[34,-12],[-35,-38],[36,-38],[40,22],[-42,25]]
+    .forEach(p=>tree(...p));
+
+  for(let i=0;i<45;i++){
+    const x=(Math.random()-.5)*84,z=(Math.random()-.5)*84;
+    if(Math.abs(x)>7){
+      box(.18,.7,.18,0x3f9c52,x,.35,z);
+      sphere(.35,[0xff75b5,0xffdf69,0xffffff,0xa87be8][i%4],x,.85,z);
+    }
+  }
+
+  const player=new THREE.Group();
+  const skinMat=mat(avatar.skin),hairMat=mat(avatar.hair),shirtMat=mat(avatar.shirt),pantsMat=mat(avatar.pants),white=mat(0xffffff);
+
+  const body=new THREE.Mesh(new THREE.CapsuleGeometry(.72,1.3,6,12),shirtMat);
+  body.position.y=2.25;body.castShadow=true;player.add(body);
+
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.78,24,18),skinMat);
+  head.position.y=3.75;head.castShadow=true;player.add(head);
+
+  let hairGeo;
+  if(avatar.hairStyle==='bob') hairGeo=new THREE.SphereGeometry(.84,24,18);
+  else if(avatar.hairStyle==='bun') hairGeo=new THREE.SphereGeometry(.81,24,18);
+  else hairGeo=new THREE.CapsuleGeometry(.72,.7,6,12);
+
+  const hairBack=new THREE.Mesh(hairGeo,hairMat);
+  hairBack.position.set(0,avatar.hairStyle==='long'?-0.15:.05,-.22);
+  if(avatar.hairStyle==='long') hairBack.rotation.x=.12;
+  head.add(hairBack);
+
+  if(avatar.hairStyle==='bun'){
+    const bun=new THREE.Mesh(new THREE.SphereGeometry(.34,18,12),hairMat);
+    bun.position.set(0,.72,-.08);head.add(bun);
+  }
+
+  const face=new THREE.Mesh(new THREE.SphereGeometry(.7,24,18,0,Math.PI*2,0,Math.PI*.62),skinMat);
+  face.position.set(0,0,.27);head.add(face);
+
+  function eye(x){
+    const e=new THREE.Mesh(new THREE.SphereGeometry(.09,12,8),mat(0x35231f));
+    e.position.set(x,.12,.69);head.add(e);
+  }
+  eye(-.25);eye(.25);
+
+  const arms=[];
+  for(const x of [-.45,.45]){
+    const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.18,1.05,5,8),skinMat);
+    arm.position.set(x,2.15,0);player.add(arm);arms.push(arm);
+  }
+  const legs=[];
+  for(const x of [-.3,.3]){
+    const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.22,1.1,5,8),pantsMat);
+    leg.position.set(x,.75,0);player.add(leg);legs.push(leg);
+    const shoe=new THREE.Mesh(new THREE.BoxGeometry(.48,.28,.78),white);
+    shoe.position.set(x,.08,.12);shoe.castShadow=true;player.add(shoe);
+  }
+
+  player.position.set(0,0,15);scene.add(player);
+
+  const polly=new THREE.Group();
+  const pb=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,16),mat(0xd6a47b));
+  pb.scale.set(1.2,.8,1.45);pb.position.y=1.05;polly.add(pb);
+  const ph=new THREE.Mesh(new THREE.SphereGeometry(.82,20,16),mat(0xe2b68f));
+  ph.position.set(0,1.65,.95);polly.add(ph);
+  for(const x of [-.52,.52]){
+    const ear=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,12),mat(0x8d5d43));
+    ear.position.set(x,2.25,.92);ear.rotation.z=x<0?.3:-.3;polly.add(ear);
+  }
+  polly.position.set(-12,0,-15);scene.add(polly);
+
+  const mama=new THREE.Group();
+  const mamaBody=new THREE.Mesh(new THREE.CapsuleGeometry(.75,1.45,6,12),mat(0x8d68d6));
+  mamaBody.position.y=2.25;mama.add(mamaBody);
+  const mamaHead=new THREE.Mesh(new THREE.SphereGeometry(.8,24,18),mat(0xf0c1a0));
+  mamaHead.position.y=3.85;mama.add(mamaHead);
+  const mamaHair=new THREE.Mesh(new THREE.CapsuleGeometry(.73,.75,6,12),mat(0x4a2c25));
+  mamaHair.position.set(0,3.8,-.25);mama.add(mamaHair);
+  mama.position.set(12,0,-11);scene.add(mama);
+
+  let stars=Number(localStorage.getItem('emilia3dStars')||0);
+  let coins=Number(localStorage.getItem('emilia3dCoins')||100);
+  $('stars').textContent=stars;$('coins').textContent=coins;
+
+  const starObjects=[];
+  const starGeo=new THREE.OctahedronGeometry(.55,0);
+  for(let i=0;i<8;i++){
+    const s=new THREE.Mesh(starGeo,mat(0xffdf45));
+    const angle=(i/8)*Math.PI*2;
+    s.position.set(Math.cos(angle)*28,1.5,Math.sin(angle)*28-5);
+    s.castShadow=true;s.userData.collected=false;scene.add(s);starObjects.push(s);
+  }
+
+  camera.position.set(0,9,24);
+  let keys={},joy={x:0,y:0},velocity=new THREE.Vector3(),walk=0;
+  addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
+  addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+
+  const joyEl=$('joystick'),stick=$('stick');
+  function joyMove(e){
+    const t=e.touches?e.touches[0]:e,r=joyEl.getBoundingClientRect();
+    let x=t.clientX-(r.left+r.width/2),y=t.clientY-(r.top+r.height/2);
+    const max=42,l=Math.hypot(x,y)||1;
+    if(l>max){x=x/l*max;y=y/l*max}
+    joy.x=x/max;joy.y=y/max;
+    stick.style.transform=`translate(${x}px,${y}px)`;
+  }
+  function joyEnd(){joy.x=joy.y=0;stick.style.transform='translate(0,0)'}
+  joyEl.addEventListener('touchstart',joyMove,{passive:false});
+  joyEl.addEventListener('touchmove',e=>{e.preventDefault();joyMove(e)},{passive:false});
+  joyEl.addEventListener('touchend',joyEnd);
+  joyEl.addEventListener('pointerdown',e=>{joyEl.setPointerCapture(e.pointerId);joyMove(e)});
+  joyEl.addEventListener('pointermove',e=>{if(e.buttons)joyMove(e)});
+  joyEl.addEventListener('pointerup',joyEnd);
+
+  function notify(text){
+    const m=$('message');
+    m.textContent=text;m.style.opacity=1;
+    clearTimeout(window.mt);
+    window.mt=setTimeout(()=>m.style.opacity=0,1900);
+  }
+
+  let lastZone='';
+  function zones(){
+    let zone='';
+    if(player.position.distanceTo(new THREE.Vector3(-19,0,-18))<8) zone='🏡 Willkommen am Traumhaus!';
+    if(player.position.distanceTo(new THREE.Vector3(20,0,-19))<8) zone='🐾 Willkommen beim Hundeladen!';
+    if(player.position.distanceTo(polly.position)<5) zone='🐶 Polly freut sich, Emilia zu sehen!';
+    if(player.position.distanceTo(mama.position)<5) zone='👩🏻 Mama: Hallo Emilia! ❤️';
+    if(zone&&zone!==lastZone) notify(zone);
+    lastZone=zone;
+  }
+
+  const clock=new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const dt=Math.min(clock.getDelta(),.04);
+
+    let x=joy.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
+    let z=joy.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
+    const len=Math.hypot(x,z);
+
+    if(len>.08){
+      x/=Math.max(1,len);z/=Math.max(1,len);
+      velocity.x=THREE.MathUtils.lerp(velocity.x,x*8,.18);
+      velocity.z=THREE.MathUtils.lerp(velocity.z,z*8,.18);
+      player.rotation.y=Math.atan2(velocity.x,velocity.z);
+      walk+=dt*10;
+      body.position.y=2.25+Math.sin(walk)*.07;
+      legs[0].rotation.x=Math.sin(walk)*.45;
+      legs[1].rotation.x=-Math.sin(walk)*.45;
+      arms[0].rotation.x=-Math.sin(walk)*.35;
+      arms[1].rotation.x=Math.sin(walk)*.35;
+    }else{
+      velocity.x=THREE.MathUtils.lerp(velocity.x,0,.2);
+      velocity.z=THREE.MathUtils.lerp(velocity.z,0,.2);
+      legs.forEach(l=>l.rotation.x*=.82);
+      arms.forEach(a=>a.rotation.x*=.82);
+    }
+
+    player.position.x+=velocity.x*dt;
+    player.position.z+=velocity.z*dt;
+    player.position.x=THREE.MathUtils.clamp(player.position.x,-46,46);
+    player.position.z=THREE.MathUtils.clamp(player.position.z,-52,46);
+
+    starObjects.forEach((s,i)=>{
+      if(s.userData.collected)return;
+      s.rotation.y+=dt*2;
+      s.position.y=1.5+Math.sin(performance.now()/500+i)*.18;
+      if(player.position.distanceTo(s.position)<1.8){
+        s.userData.collected=true;
+        scene.remove(s);
+        stars++;coins+=5;
+        $('stars').textContent=stars;$('coins').textContent=coins;
+        localStorage.setItem('emilia3dStars',stars);
+        localStorage.setItem('emilia3dCoins',coins);
+        notify('⭐ Stern gefunden! +5 Münzen');
+      }
+    });
+
+    const behind=new THREE.Vector3(0,7,11)
+      .applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
+    const target=player.position.clone().add(behind);
+    camera.position.lerp(target,.07);
+    camera.lookAt(player.position.x,2.2,player.position.z);
+
+    zones();
+    renderer.render(scene,camera);
+  }
+
+  $('loading').style.display='none';
+  $('hud').classList.remove('hidden');
+  $('joystick').classList.remove('hidden');
+  $('hint').classList.remove('hidden');
+
+  animate();
+
+  addEventListener('resize',()=>{
+    camera.aspect=innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+  });
 }
-
-const clock=new THREE.Clock();
-function animate(){
- requestAnimationFrame(animate);
- const dt=Math.min(clock.getDelta(),.04);
- let x=joy.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
- let z=joy.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
- const len=Math.hypot(x,z);
- if(len>.08){
-   x/=Math.max(1,len);z/=Math.max(1,len);
-   velocity.x=THREE.MathUtils.lerp(velocity.x,x*8,.18);
-   velocity.z=THREE.MathUtils.lerp(velocity.z,z*8,.18);
-   player.rotation.y=Math.atan2(velocity.x,velocity.z);
-   walk+=dt*10; body.position.y=2.25+Math.sin(walk)*.07;
- }else{
-   velocity.x=THREE.MathUtils.lerp(velocity.x,0,.2);
-   velocity.z=THREE.MathUtils.lerp(velocity.z,0,.2);
- }
- player.position.x+=velocity.x*dt;player.position.z+=velocity.z*dt;
- player.position.x=THREE.MathUtils.clamp(player.position.x,-43,43);
- player.position.z=THREE.MathUtils.clamp(player.position.z,-48,43);
-
- const behind=new THREE.Vector3(0,7,11).applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
- const target=player.position.clone().add(behind);
- camera.position.lerp(target,.07);
- camera.lookAt(player.position.x,2.2,player.position.z);
- zones();
- renderer.render(scene,camera);
-}
-animate();
-document.getElementById('loading').style.display='none';
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
 </script>
 </body>
 </html>
