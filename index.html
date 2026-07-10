@@ -540,7 +540,7 @@ function startWorld(){
       }
     });
 
-    const behind=new THREE.Vector3(0,7,11)
+    const behind=new THREE.Vector3(0,7,-11)
       .applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
     const target=player.position.clone().add(behind);
     camera.position.lerp(target,.07);
