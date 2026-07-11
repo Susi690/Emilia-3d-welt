@@ -753,7 +753,7 @@ polly.add(pollyTail);
   const mamaHead=new THREE.Mesh(new THREE.SphereGeometry(.8,24,18),mat(0xf0c1a0));
   mamaHead.position.y=3.85;mama.add(mamaHead);
   const mamaHair=new THREE.Mesh(new THREE.CapsuleGeometry(.73,.75,6,12),mat(0x4a2c25));
-  mamaHair.position.set(0,3.8,-.25);mama.add(mamaHair);
+  mamaHair.position.set(0,3.8,-.55);mama.add(mamaHair);
   mama.position.set(12,0,-11);scene.add(mama);
 
   let stars=Number(localStorage.getItem('emilia3dStars')||0);
@@ -809,8 +809,12 @@ polly.add(pollyTail);
     lastZone=zone;
   }
 
-  const clock=new THREE.Clock();
-  function animate(){
+const clock=new THREE.Clock();
+
+let cameraAngle = 0;
+let cameraDistance = 11;
+
+function animate(){
     requestAnimationFrame(animate);
     const dt=Math.min(clock.getDelta(),.04);
 
@@ -856,8 +860,11 @@ polly.add(pollyTail);
       }
     });
 
-    const behind=new THREE.Vector3(0,7,-11)
-      .applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
+ const behind = new THREE.Vector3(0, 7, -cameraDistance)
+  .applyAxisAngle(
+    new THREE.Vector3(0, 1, 0),
+    player.rotation.y + cameraAngle
+  );
     const target=player.position.clone().add(behind);
     camera.position.lerp(target,.07);
     camera.lookAt(player.position.x,2.2,player.position.z);
@@ -872,7 +879,25 @@ polly.add(pollyTail);
   $('hint').classList.remove('hidden');
 
   animate();
+let isDragging = false;
+let lastPointerX = 0;
+  renderer.domElement.style.touchAction = 'none';
 
+renderer.domElement.addEventListener('pointerdown', (e) => {
+  isDragging = true;
+  lastPointerX = e.clientX;
+});
+
+renderer.domElement.addEventListener('pointermove', (e) => {
+  if (!isDragging) return;
+  const deltaX = e.clientX - lastPointerX;
+  cameraAngle -= deltaX * 0.01;
+  lastPointerX = e.clientX;
+});
+
+addEventListener('pointerup', () => {
+  isDragging = false;
+});
   addEventListener('resize',()=>{
     camera.aspect=innerWidth/innerHeight;
     camera.updateProjectionMatrix();
