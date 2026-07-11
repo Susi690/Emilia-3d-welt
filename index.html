@@ -372,269 +372,564 @@ function startWorld(){
     }
   }
 
-  const player = new THREE.Group();
+/* =========================================================
+   EMILIA – NEUES DETAILLIERTES 3D-MODELL
+   ========================================================= */
 
+const player = new THREE.Group();
+
+/* Materialien aus der Charakterauswahl */
 const skinMat = mat(avatar.skin);
 const hairMat = mat(avatar.hair);
 const shirtMat = mat(avatar.shirt);
 const pantsMat = mat(avatar.pants);
+
 const white = mat(0xffffff);
-const eyeWhiteMat = mat(0xffffff);
-const irisMat = mat(0x6b3f25);
-const pupilMat = mat(0x1d1512);
+const darkBrown = mat(0x3b2118);
+const eyeBrown = mat(0x5a2d16);
+const pupilMat = mat(0x120b08);
+const blushMat = mat(0xf3a1a8);
 const mouthMat = mat(0xb94f69);
-const blushMat = mat(0xf2a2a8);
+const pinkMat = mat(0xf28cc6);
+const lightPinkMat = mat(0xffc6e4);
+const shoeWhiteMat = mat(0xfffafa);
+const denimMat = mat(0x72a9cf);
+const denimDarkMat = mat(0x4f82aa);
+const goldMat = mat(0xffd166);
 
-/* Körper */
-const body = new THREE.Mesh(
-  new THREE.CapsuleGeometry(0.62, 1.15, 8, 16),
-  shirtMat
-);
-body.position.y = 2.18;
-body.scale.set(1, 1.05, 0.82);
-body.castShadow = true;
-player.add(body);
+/* Helfer */
+function emiliaMesh(geometry, material, x, y, z, parent = player) {
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
 
-/* Taille */
-const waist = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.46, 0.52, 0.35, 20),
-  pantsMat
-);
-waist.position.y = 1.42;
-waist.castShadow = true;
-player.add(waist);
+/* =========================================================
+   KÖRPER
+   ========================================================= */
 
-/* Kopf */
-const head = new THREE.Mesh(
-  new THREE.SphereGeometry(0.76, 32, 24),
-  skinMat
+const body = emiliaMesh(
+  new THREE.CapsuleGeometry(0.62, 1.12, 10, 20),
+  shirtMat,
+  0,
+  2.25,
+  0
 );
-head.position.y = 3.72;
-head.scale.set(0.94, 1.04, 0.9);
-head.castShadow = true;
-player.add(head);
+
+body.scale.set(1.02, 1, 0.78);
+
+/* Taille für einen weicheren Übergang */
+const waist = emiliaMesh(
+  new THREE.CylinderGeometry(0.48, 0.55, 0.38, 24),
+  shirtMat,
+  0,
+  1.48,
+  0
+);
+
+/* Hosenbund */
+const waistband = emiliaMesh(
+  new THREE.CylinderGeometry(0.51, 0.54, 0.22, 24),
+  denimDarkMat,
+  0,
+  1.27,
+  0
+);
+
+/* =========================================================
+   KOPF
+   ========================================================= */
+
+const headGroup = new THREE.Group();
+headGroup.position.set(0, 3.82, 0);
+player.add(headGroup);
+
+const head = emiliaMesh(
+  new THREE.SphereGeometry(0.91, 32, 26),
+  skinMat,
+  0,
+  0,
+  0,
+  headGroup
+);
+
+head.scale.set(0.94, 1.08, 0.88);
 
 /* Ohren */
-for (const x of [-0.68, 0.68]) {
-  const ear = new THREE.Mesh(
-    new THREE.SphereGeometry(0.13, 16, 12),
-    skinMat
-  );
-  ear.position.set(x, 3.71, 0);
-  ear.scale.set(0.65, 1, 0.5);
-  player.add(ear);
-}
-
-/* Haare hinten */
-let hairBack;
-
-if (avatar.hairStyle === "bob") {
-  hairBack = new THREE.Mesh(
-    new THREE.SphereGeometry(0.81, 28, 20),
-    hairMat
-  );
-  hairBack.scale.set(1.04, 1.08, 0.94);
-  hairBack.position.set(0, 3.76, -0.18);
-} else if (avatar.hairStyle === "bun") {
-  hairBack = new THREE.Mesh(
-    new THREE.SphereGeometry(0.79, 28, 20),
-    hairMat
-  );
-  hairBack.scale.set(1.03, 1.02, 0.92);
-  hairBack.position.set(0, 3.77, -0.18);
-
-  const bun = new THREE.Mesh(
-    new THREE.SphereGeometry(0.34, 20, 16),
-    hairMat
-  );
-  bun.position.set(0, 4.47, -0.16);
-  bun.castShadow = true;
-  player.add(bun);
-} else {
-  hairBack = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.68, 0.9, 8, 16),
-    hairMat
-  );
-  hairBack.position.set(0, 3.45, -0.28);
-  hairBack.scale.set(1.08, 1.15, 0.92);
-}
-
-hairBack.castShadow = true;
-player.add(hairBack);
-
-/* Gesicht vorne */
-const face = new THREE.Mesh(
-  new THREE.SphereGeometry(
-    0.71,
-    32,
-    24,
+for (const x of [-0.82, 0.82]) {
+  const ear = emiliaMesh(
+    new THREE.SphereGeometry(0.18, 18, 14),
+    skinMat,
+    x,
     0,
-    Math.PI * 2,
     0,
-    Math.PI * 0.64
-  ),
-  skinMat
-);
-face.position.set(0, 3.7, 0.26);
-face.scale.set(0.94, 1.02, 0.8);
-player.add(face);
-
-/* Pony / vordere Haarsträhnen */
-for (const x of [-0.38, 0.38]) {
-  const strand = new THREE.Mesh(
-    new THREE.SphereGeometry(0.31, 18, 14),
-    hairMat
+    headGroup
   );
-  strand.scale.set(0.72, 1.18, 0.45);
-  strand.position.set(x, 4.12, 0.43);
-  strand.rotation.z = x < 0 ? -0.28 : 0.28;
-  player.add(strand);
+
+  ear.scale.set(0.72, 1.05, 0.5);
 }
 
-/* Augen */
+/* =========================================================
+   AUGEN
+   ========================================================= */
+
 function createEye(x) {
-  const eyeWhite = new THREE.Mesh(
-    new THREE.SphereGeometry(0.16, 18, 14),
-    eyeWhiteMat
-  );
-  eyeWhite.scale.set(1, 1.2, 0.38);
-  eyeWhite.position.set(x, 3.79, 0.72);
-  player.add(eyeWhite);
+  const eyeGroup = new THREE.Group();
+  eyeGroup.position.set(x, 0.10, 0.72);
+  headGroup.add(eyeGroup);
 
-  const iris = new THREE.Mesh(
-    new THREE.SphereGeometry(0.095, 16, 12),
-    irisMat
+  const eyeWhite = emiliaMesh(
+    new THREE.SphereGeometry(0.25, 24, 20),
+    white,
+    0,
+    0,
+    0,
+    eyeGroup
   );
-  iris.scale.set(1, 1.12, 0.35);
-  iris.position.set(x, 3.78, 0.855);
-  player.add(iris);
+  eyeWhite.scale.set(1, 1.17, 0.35);
 
-  const pupil = new THREE.Mesh(
-    new THREE.SphereGeometry(0.045, 12, 10),
-    pupilMat
+  const iris = emiliaMesh(
+    new THREE.SphereGeometry(0.16, 22, 18),
+    eyeBrown,
+    0,
+    -0.01,
+    0.19,
+    eyeGroup
   );
-  pupil.position.set(x, 3.78, 0.91);
-  player.add(pupil);
+  iris.scale.z = 0.38;
 
-  const shine = new THREE.Mesh(
-    new THREE.SphereGeometry(0.022, 10, 8),
-    white
+  const pupil = emiliaMesh(
+    new THREE.SphereGeometry(0.09, 18, 14),
+    pupilMat,
+    0,
+    -0.01,
+    0.25,
+    eyeGroup
   );
-  shine.position.set(x - 0.025, 3.82, 0.95);
-  player.add(shine);
+  pupil.scale.z = 0.3;
+
+  const reflectionBig = emiliaMesh(
+    new THREE.SphereGeometry(0.038, 12, 10),
+    white,
+    -0.045,
+    0.055,
+    0.305,
+    eyeGroup
+  );
+
+  const reflectionSmall = emiliaMesh(
+    new THREE.SphereGeometry(0.018, 10, 8),
+    white,
+    0.055,
+    -0.055,
+    0.31,
+    eyeGroup
+  );
+
+  /* Oberes Augenlid */
+  const lid = emiliaMesh(
+    new THREE.TorusGeometry(0.255, 0.025, 8, 24, Math.PI),
+    darkBrown,
+    0,
+    0.08,
+    0.275,
+    eyeGroup
+  );
+  lid.rotation.z = Math.PI;
+
+  /* Wimpern */
+  for (let i = 0; i < 3; i++) {
+    const lash = emiliaMesh(
+      new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8),
+      darkBrown,
+      0.16 + i * 0.025,
+      0.14 - i * 0.018,
+      0.29,
+      eyeGroup
+    );
+
+    lash.rotation.z = -0.55 + i * 0.12;
+    lash.rotation.x = Math.PI / 2;
+  }
 }
 
-createEye(-0.255);
-createEye(0.255);
+createEye(-0.34);
+createEye(0.34);
 
 /* Augenbrauen */
-for (const x of [-0.255, 0.255]) {
-  const brow = new THREE.Mesh(
-    new THREE.BoxGeometry(0.22, 0.035, 0.035),
-    hairMat
+for (const x of [-0.34, 0.34]) {
+  const brow = emiliaMesh(
+    new THREE.CapsuleGeometry(0.035, 0.28, 5, 10),
+    darkBrown,
+    x,
+    0.48,
+    0.75,
+    headGroup
   );
-  brow.position.set(x, 4.03, 0.77);
-  brow.rotation.z = x < 0 ? -0.08 : 0.08;
-  player.add(brow);
+
+  brow.rotation.z = x < 0 ? -1.42 : 1.42;
+  brow.scale.z = 0.55;
 }
 
 /* Nase */
-const nose = new THREE.Mesh(
-  new THREE.SphereGeometry(0.055, 12, 10),
-  skinMat
+const nose = emiliaMesh(
+  new THREE.SphereGeometry(0.095, 16, 12),
+  skinMat,
+  0,
+  -0.12,
+  0.81,
+  headGroup
 );
-nose.position.set(0, 3.63, 0.91);
-nose.scale.set(0.8, 1, 0.65);
-player.add(nose);
+nose.scale.set(0.8, 0.7, 0.6);
 
 /* Mund */
-const mouth = new THREE.Mesh(
-  new THREE.TorusGeometry(0.11, 0.025, 8, 18, Math.PI),
-  mouthMat
+const mouth = emiliaMesh(
+  new THREE.TorusGeometry(0.17, 0.025, 8, 24, Math.PI),
+  mouthMat,
+  0,
+  -0.42,
+  0.79,
+  headGroup
 );
-mouth.position.set(0, 3.47, 0.91);
 mouth.rotation.z = Math.PI;
-player.add(mouth);
 
-/* Wangen */
-for (const x of [-0.41, 0.41]) {
-  const cheek = new THREE.Mesh(
-    new THREE.SphereGeometry(0.075, 12, 10),
-    blushMat
+/* Kleine Mundwinkel */
+for (const x of [-0.16, 0.16]) {
+  const corner = emiliaMesh(
+    new THREE.SphereGeometry(0.025, 10, 8),
+    mouthMat,
+    x,
+    -0.39,
+    0.80,
+    headGroup
   );
-  cheek.scale.set(1.25, 0.7, 0.3);
-  cheek.position.set(x, 3.53, 0.82);
-  player.add(cheek);
 }
 
-/* Arme */
+/* Wangen */
+for (const x of [-0.61, 0.61]) {
+  const cheek = emiliaMesh(
+    new THREE.SphereGeometry(0.13, 16, 12),
+    blushMat,
+    x,
+    -0.25,
+    0.67,
+    headGroup
+  );
+
+  cheek.scale.set(1.15, 0.55, 0.22);
+}
+
+/* =========================================================
+   HAARE – LANGE BRAUNE WELLEN
+   ========================================================= */
+
+/* Hintere große Haarmasse */
+const backHair = emiliaMesh(
+  new THREE.CapsuleGeometry(0.88, 2.15, 12, 24),
+  hairMat,
+  0,
+  -0.38,
+  -0.49,
+  headGroup
+);
+
+backHair.scale.set(1.06, 1, 0.63);
+
+/* Haaransatz */
+const hairCap = emiliaMesh(
+  new THREE.SphereGeometry(0.94, 30, 24),
+  hairMat,
+  0,
+  0.34,
+  -0.05,
+  headGroup
+);
+
+hairCap.scale.set(1.01, 0.76, 0.91);
+
+/* Mittelscheitel */
+const parting = emiliaMesh(
+  new THREE.CapsuleGeometry(0.025, 0.48, 5, 10),
+  darkBrown,
+  0,
+  0.78,
+  0.62,
+  headGroup
+);
+
+parting.rotation.z = Math.PI / 2;
+
+/* Seitliche Haarpartien */
+for (const side of [-1, 1]) {
+  const frontLock = emiliaMesh(
+    new THREE.CapsuleGeometry(0.19, 1.42, 8, 18),
+    hairMat,
+    side * 0.68,
+    -0.08,
+    0.25,
+    headGroup
+  );
+
+  frontLock.rotation.z = side * -0.18;
+  frontLock.scale.z = 0.72;
+
+  /* Mehrere Wellen bis zu den Schultern */
+  for (let i = 0; i < 5; i++) {
+    const wave = emiliaMesh(
+      new THREE.SphereGeometry(0.31 - i * 0.018, 20, 16),
+      hairMat,
+      side * (0.74 + Math.sin(i * 1.5) * 0.10),
+      -0.58 - i * 0.36,
+      -0.10 + Math.cos(i * 1.4) * 0.12,
+      headGroup
+    );
+
+    wave.scale.set(0.78, 1.2, 0.72);
+  }
+}
+
+/* Stirnsträhnen */
+for (const side of [-1, 1]) {
+  const fringe = emiliaMesh(
+    new THREE.CapsuleGeometry(0.13, 0.63, 7, 14),
+    hairMat,
+    side * 0.33,
+    0.56,
+    0.55,
+    headGroup
+  );
+
+  fringe.rotation.z = side * 0.48;
+  fringe.scale.z = 0.56;
+}
+
+/* =========================================================
+   REGENBOGEN AUF DEM SHIRT
+   ========================================================= */
+
+const rainbowColors = [
+  0xf05b72,
+  0xffa14d,
+  0xffd65a,
+  0x77c96b,
+  0x62b9e8,
+  0x9a74d6
+];
+
+rainbowColors.forEach((color, index) => {
+  const arc = emiliaMesh(
+    new THREE.TorusGeometry(
+      0.31 - index * 0.037,
+      0.022,
+      7,
+      24,
+      Math.PI
+    ),
+    mat(color),
+    0,
+    2.35 - index * 0.012,
+    0.57 + index * 0.006
+  );
+
+  arc.rotation.z = Math.PI;
+});
+
+/* Kleine Wolken */
+for (const x of [-0.31, 0.31]) {
+  emiliaMesh(
+    new THREE.SphereGeometry(0.08, 12, 10),
+    white,
+    x,
+    2.29,
+    0.61
+  );
+}
+
+/* =========================================================
+   ARME UND HÄNDE
+   ========================================================= */
+
 const arms = [];
 
-for (const x of [-0.72, 0.72]) {
+for (const x of [-0.79, 0.79]) {
   const armGroup = new THREE.Group();
-
-  const upperArm = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.16, 0.62, 6, 12),
-    shirtMat
-  );
-  upperArm.position.y = -0.1;
-  upperArm.castShadow = true;
-  armGroup.add(upperArm);
-
-  const foreArm = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.135, 0.55, 6, 12),
-    skinMat
-  );
-  foreArm.position.y = -0.66;
-  foreArm.castShadow = true;
-  armGroup.add(foreArm);
-
-  const hand = new THREE.Mesh(
-    new THREE.SphereGeometry(0.17, 16, 12),
-    skinMat
-  );
-  hand.position.y = -1.02;
-  hand.scale.set(0.85, 1.05, 0.72);
-  armGroup.add(hand);
-
-  armGroup.position.set(x, 2.48, 0);
-  armGroup.rotation.z = x < 0 ? 0.08 : -0.08;
-
+  armGroup.position.set(x, 2.62, 0);
   player.add(armGroup);
+
+  /* Kurzer Ärmel */
+  const sleeve = emiliaMesh(
+    new THREE.CapsuleGeometry(0.19, 0.35, 7, 14),
+    shirtMat,
+    0,
+    -0.12,
+    0,
+    armGroup
+  );
+
+  /* Unterarm */
+  const arm = emiliaMesh(
+    new THREE.CapsuleGeometry(0.15, 0.82, 7, 14),
+    skinMat,
+    0,
+    -0.71,
+    0,
+    armGroup
+  );
+
+  /* Hand */
+  const hand = emiliaMesh(
+    new THREE.SphereGeometry(0.18, 18, 14),
+    skinMat,
+    0,
+    -1.25,
+    0.02,
+    armGroup
+  );
+
+  hand.scale.set(0.72, 1, 0.62);
+
+  /* Kleine Fingerandeutung */
+  for (let i = -1; i <= 1; i++) {
+    const finger = emiliaMesh(
+      new THREE.CapsuleGeometry(0.025, 0.10, 4, 8),
+      skinMat,
+      i * 0.055,
+      -1.38,
+      0.04,
+      armGroup
+    );
+  }
+
   arms.push(armGroup);
 }
 
-/* Beine */
+/* =========================================================
+   JEANSBEINE UND ROSA SNEAKER
+   ========================================================= */
+
 const legs = [];
 
-for (const x of [-0.29, 0.29]) {
+for (const x of [-0.31, 0.31]) {
   const legGroup = new THREE.Group();
-
-  const leg = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.2, 0.85, 6, 12),
-    pantsMat
-  );
-  leg.position.y = 0.1;
-  leg.castShadow = true;
-  legGroup.add(leg);
-
-  const shoe = new THREE.Mesh(
-    new THREE.CapsuleGeometry(0.22, 0.35, 6, 12),
-    white
-  );
-  shoe.rotation.x = Math.PI / 2;
-  shoe.scale.set(1.05, 1, 1.32);
-  shoe.position.set(0, -0.65, 0.17);
-  shoe.castShadow = true;
-  legGroup.add(shoe);
-
-  legGroup.position.set(x, 0.88, 0);
-
+  legGroup.position.set(x, 0.95, 0);
   player.add(legGroup);
+
+  /* Jeansbein */
+  const leg = emiliaMesh(
+    new THREE.CapsuleGeometry(0.27, 1.03, 8, 16),
+    denimMat,
+    0,
+    -0.23,
+    0,
+    legGroup
+  );
+
+  leg.scale.z = 0.82;
+
+  /* Jeansnaht */
+  const seam = emiliaMesh(
+    new THREE.CapsuleGeometry(0.018, 0.75, 4, 8),
+    denimDarkMat,
+    0,
+    -0.19,
+    0.26,
+    legGroup
+  );
+
+  /* Angedeutete Hosentasche */
+  const pocket = emiliaMesh(
+    new THREE.TorusGeometry(0.11, 0.018, 6, 18, Math.PI),
+    denimDarkMat,
+    0,
+    0.17,
+    0.27,
+    legGroup
+  );
+
+  pocket.rotation.z = Math.PI;
+
+  /* Rosa Sneaker */
+  const shoe = emiliaMesh(
+    new THREE.CapsuleGeometry(0.25, 0.38, 7, 14),
+    pinkMat,
+    0,
+    -0.97,
+    0.15,
+    legGroup
+  );
+
+  shoe.rotation.x = Math.PI / 2;
+  shoe.scale.set(1.12, 1.02, 1.4);
+
+  /* Weiße Sohle */
+  const sole = emiliaMesh(
+    new THREE.BoxGeometry(0.55, 0.14, 0.82),
+    shoeWhiteMat,
+    0,
+    -1.13,
+    0.20,
+    legGroup
+  );
+
+  sole.geometry.translate(0, 0, 0);
+
+  /* Schnürsenkel */
+  for (let i = 0; i < 3; i++) {
+    const lace = emiliaMesh(
+      new THREE.BoxGeometry(0.33, 0.025, 0.035),
+      white,
+      0,
+      -0.93 + i * 0.08,
+      0.51,
+      legGroup
+    );
+  }
+
   legs.push(legGroup);
 }
 
+/* =========================================================
+   KLEINE DETAILS
+   ========================================================= */
+
+/* Shirt-Kragen */
+const collar = emiliaMesh(
+  new THREE.TorusGeometry(0.27, 0.035, 8, 24, Math.PI),
+  lightPinkMat,
+  0,
+  2.93,
+  0.38
+);
+collar.rotation.z = Math.PI;
+
+/* Jeansknopf */
+emiliaMesh(
+  new THREE.SphereGeometry(0.055, 12, 10),
+  goldMat,
+  0,
+  1.31,
+  0.51
+);
+
+/* Jeans-Mittelnaht */
+emiliaMesh(
+  new THREE.BoxGeometry(0.025, 0.32, 0.025),
+  denimDarkMat,
+  0,
+  1.08,
+  0.50
+);
+
+/* =========================================================
+   SPIELFIGUR PLATZIEREN
+   ========================================================= */
+
 player.position.set(0, 0, 15);
+player.rotation.y = 0;
+
 scene.add(player);
   const polly=new THREE.Group();
   const pb=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,16),mat(0xd6a47b));
