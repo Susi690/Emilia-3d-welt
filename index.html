@@ -104,6 +104,26 @@ canvas{display:block}
   position:absolute;width:58px;height:58px;left:33px;top:33px;border-radius:50%;
   background:linear-gradient(135deg,#e16bc5,#8d67d5);box-shadow:0 4px 12px #0003
 }
+#pollyModeButton{
+  position:fixed;
+  right:20px;
+  bottom:92px;
+  z-index:20;
+  border:none;
+  border-radius:22px;
+  padding:12px 16px;
+  background:rgba(255,255,255,.94);
+  color:#74439a;
+  font-weight:900;
+  font-size:14px;
+  box-shadow:0 5px 18px #0002;
+  cursor:pointer;
+  pointer-events:auto;
+}
+
+#pollyModeButton:active{
+  transform:scale(.96);
+}
 #hint{
   position:fixed;bottom:25px;right:20px;background:#fff9;border-radius:20px;padding:10px 14px;
   color:#6b477f;font-weight:bold;z-index:5;max-width:210px;text-align:center
@@ -227,7 +247,7 @@ canvas{display:block}
 
 <div id="message"></div>
 <div id="joystick" class="hidden"><div id="stick"></div></div>
-<div id="hint" class="hidden">Mac: WASD / Pfeile<br>iPhone: Joystick 🎮</div>
+<button id="pollyModeButton">🐾 Polly folgt</button><div id="hint" class="hidden">Mac: WASD / Pfeile<br>iPhone: Joystick 🎮</div>
 
 <div id="profilePanel" class="hidden">
   <div class="profileCard">
@@ -772,10 +792,29 @@ function zones(){
    POLLY FOLGT EMILIA
    ========================================================= */
 
+   let pollyShouldFollow = true;
+
+const pollyModeButton = document.getElementById('pollyModeButton');
+
+function updatePollyModeButton() {
+  if (pollyShouldFollow) {
+    pollyModeButton.textContent = '🐾 Polly folgt';
+  } else {
+    pollyModeButton.textContent = '🛏️ Polly bleibt';
+  }
+}
+
+pollyModeButton.addEventListener('click', () => {
+  pollyShouldFollow = !pollyShouldFollow;
+  updatePollyModeButton();
+});
+
+updatePollyModeButton();
 const pollyFollowOffset = new THREE.Vector3(1.8, 0, 2.2);
 const pollyTargetPosition = new THREE.Vector3();
 
 function updatePollyFollow(dt) {
+  if (!pollyShouldFollow) return;
   // Im Haus bleibt Polly vorerst draußen
   if (isInsideHouse) return;
 
