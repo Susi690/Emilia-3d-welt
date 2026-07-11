@@ -242,9 +242,17 @@ canvas{display:block}
     <button id="closeProfile" class="closeButton">Zurück ins Spiel</button>
   </div>
 </div>
-
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.167.1/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.167.1/examples/jsm/loaders/GLTFLoader.js';
 
 const avatar = {
   skin: '#f2c3a1',
@@ -376,562 +384,72 @@ function startWorld(){
    EMILIA – NEUES DETAILLIERTES 3D-MODELL
    ========================================================= */
 
+ /* =========================================================
+   ECHTE 3D-EMILIA AUS DER GLB-DATEI
+   ========================================================= */
+
 const player = new THREE.Group();
-
-/* Materialien aus der Charakterauswahl */
-const skinMat = mat(avatar.skin);
-const hairMat = mat(avatar.hair);
-const shirtMat = mat(avatar.shirt);
-const pantsMat = mat(avatar.pants);
-
-const white = mat(0xffffff);
-const darkBrown = mat(0x3b2118);
-const eyeBrown = mat(0x5a2d16);
-const pupilMat = mat(0x120b08);
-const blushMat = mat(0xf3a1a8);
-const mouthMat = mat(0xb94f69);
-const pinkMat = mat(0xf28cc6);
-const lightPinkMat = mat(0xffc6e4);
-const shoeWhiteMat = mat(0xfffafa);
-const denimMat = mat(0x72a9cf);
-const denimDarkMat = mat(0x4f82aa);
-const goldMat = mat(0xffd166);
-
-/* Helfer */
-function emiliaMesh(geometry, material, x, y, z, parent = player) {
-  const mesh = new THREE.Mesh(geometry, material);
-  mesh.position.set(x, y, z);
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  parent.add(mesh);
-  return mesh;
-}
-
-/* =========================================================
-   KÖRPER
-   ========================================================= */
-
-const body = emiliaMesh(
-  new THREE.CapsuleGeometry(0.62, 1.12, 10, 20),
-  shirtMat,
-  0,
-  2.25,
-  0
-);
-
-body.scale.set(1.02, 1, 0.78);
-
-/* Taille für einen weicheren Übergang */
-const waist = emiliaMesh(
-  new THREE.CylinderGeometry(0.48, 0.55, 0.38, 24),
-  shirtMat,
-  0,
-  1.48,
-  0
-);
-
-/* Hosenbund */
-const waistband = emiliaMesh(
-  new THREE.CylinderGeometry(0.51, 0.54, 0.22, 24),
-  denimDarkMat,
-  0,
-  1.27,
-  0
-);
-
-/* =========================================================
-   KOPF
-   ========================================================= */
-
-const headGroup = new THREE.Group();
-headGroup.position.set(0, 3.82, 0);
-player.add(headGroup);
-
-const head = emiliaMesh(
-  new THREE.SphereGeometry(0.91, 32, 26),
-  skinMat,
-  0,
-  0,
-  0,
-  headGroup
-);
-
-head.scale.set(0.94, 1.08, 0.88);
-
-/* Ohren */
-for (const x of [-0.82, 0.82]) {
-  const ear = emiliaMesh(
-    new THREE.SphereGeometry(0.18, 18, 14),
-    skinMat,
-    x,
-    0,
-    0,
-    headGroup
-  );
-
-  ear.scale.set(0.72, 1.05, 0.5);
-}
-
-/* =========================================================
-   AUGEN
-   ========================================================= */
-
-function createEye(x) {
-  const eyeGroup = new THREE.Group();
-  eyeGroup.position.set(x, 0.10, 0.72);
-  headGroup.add(eyeGroup);
-
-  const eyeWhite = emiliaMesh(
-    new THREE.SphereGeometry(0.25, 24, 20),
-    white,
-    0,
-    0,
-    0,
-    eyeGroup
-  );
-  eyeWhite.scale.set(1, 1.17, 0.35);
-
-  const iris = emiliaMesh(
-    new THREE.SphereGeometry(0.16, 22, 18),
-    eyeBrown,
-    0,
-    -0.01,
-    0.19,
-    eyeGroup
-  );
-  iris.scale.z = 0.38;
-
-  const pupil = emiliaMesh(
-    new THREE.SphereGeometry(0.09, 18, 14),
-    pupilMat,
-    0,
-    -0.01,
-    0.25,
-    eyeGroup
-  );
-  pupil.scale.z = 0.3;
-
-  const reflectionBig = emiliaMesh(
-    new THREE.SphereGeometry(0.038, 12, 10),
-    white,
-    -0.045,
-    0.055,
-    0.305,
-    eyeGroup
-  );
-
-  const reflectionSmall = emiliaMesh(
-    new THREE.SphereGeometry(0.018, 10, 8),
-    white,
-    0.055,
-    -0.055,
-    0.31,
-    eyeGroup
-  );
-
-  /* Oberes Augenlid */
-  const lid = emiliaMesh(
-    new THREE.TorusGeometry(0.255, 0.025, 8, 24, Math.PI),
-    darkBrown,
-    0,
-    0.08,
-    0.275,
-    eyeGroup
-  );
-  lid.rotation.z = Math.PI;
-
-  /* Wimpern */
-  for (let i = 0; i < 3; i++) {
-    const lash = emiliaMesh(
-      new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8),
-      darkBrown,
-      0.16 + i * 0.025,
-      0.14 - i * 0.018,
-      0.29,
-      eyeGroup
-    );
-
-    lash.rotation.z = -0.55 + i * 0.12;
-    lash.rotation.x = Math.PI / 2;
-  }
-}
-
-createEye(-0.34);
-createEye(0.34);
-
-/* Augenbrauen */
-for (const x of [-0.34, 0.34]) {
-  const brow = emiliaMesh(
-    new THREE.CapsuleGeometry(0.035, 0.28, 5, 10),
-    darkBrown,
-    x,
-    0.48,
-    0.75,
-    headGroup
-  );
-
-  brow.rotation.z = x < 0 ? -1.42 : 1.42;
-  brow.scale.z = 0.55;
-}
-
-/* Nase */
-const nose = emiliaMesh(
-  new THREE.SphereGeometry(0.095, 16, 12),
-  skinMat,
-  0,
-  -0.12,
-  0.81,
-  headGroup
-);
-nose.scale.set(0.8, 0.7, 0.6);
-
-/* Mund */
-const mouth = emiliaMesh(
-  new THREE.TorusGeometry(0.17, 0.025, 8, 24, Math.PI),
-  mouthMat,
-  0,
-  -0.42,
-  0.79,
-  headGroup
-);
-mouth.rotation.z = Math.PI;
-
-/* Kleine Mundwinkel */
-for (const x of [-0.16, 0.16]) {
-  const corner = emiliaMesh(
-    new THREE.SphereGeometry(0.025, 10, 8),
-    mouthMat,
-    x,
-    -0.39,
-    0.80,
-    headGroup
-  );
-}
-
-/* Wangen */
-for (const x of [-0.61, 0.61]) {
-  const cheek = emiliaMesh(
-    new THREE.SphereGeometry(0.13, 16, 12),
-    blushMat,
-    x,
-    -0.25,
-    0.67,
-    headGroup
-  );
-
-  cheek.scale.set(1.15, 0.55, 0.22);
-}
-
-/* =========================================================
-   HAARE – LANGE BRAUNE WELLEN
-   ========================================================= */
-
-/* Hintere große Haarmasse */
-const backHair = emiliaMesh(
-  new THREE.CapsuleGeometry(0.88, 2.15, 12, 24),
-  hairMat,
-  0,
-  -0.38,
-  -0.49,
-  headGroup
-);
-
-backHair.scale.set(1.06, 1, 0.63);
-
-/* Haaransatz */
-const hairCap = emiliaMesh(
-  new THREE.SphereGeometry(0.94, 30, 24),
-  hairMat,
-  0,
-  0.34,
-  -0.05,
-  headGroup
-);
-
-hairCap.scale.set(1.01, 0.76, 0.91);
-
-/* Mittelscheitel */
-const parting = emiliaMesh(
-  new THREE.CapsuleGeometry(0.025, 0.48, 5, 10),
-  darkBrown,
-  0,
-  0.78,
-  0.62,
-  headGroup
-);
-
-parting.rotation.z = Math.PI / 2;
-
-/* Seitliche Haarpartien */
-for (const side of [-1, 1]) {
-  const frontLock = emiliaMesh(
-    new THREE.CapsuleGeometry(0.19, 1.42, 8, 18),
-    hairMat,
-    side * 0.68,
-    -0.08,
-    0.25,
-    headGroup
-  );
-
-  frontLock.rotation.z = side * -0.18;
-  frontLock.scale.z = 0.72;
-
-  /* Mehrere Wellen bis zu den Schultern */
-  for (let i = 0; i < 5; i++) {
-    const wave = emiliaMesh(
-      new THREE.SphereGeometry(0.31 - i * 0.018, 20, 16),
-      hairMat,
-      side * (0.74 + Math.sin(i * 1.5) * 0.10),
-      -0.58 - i * 0.36,
-      -0.10 + Math.cos(i * 1.4) * 0.12,
-      headGroup
-    );
-
-    wave.scale.set(0.78, 1.2, 0.72);
-  }
-}
-
-/* Stirnsträhnen */
-for (const side of [-1, 1]) {
-  const fringe = emiliaMesh(
-    new THREE.CapsuleGeometry(0.13, 0.63, 7, 14),
-    hairMat,
-    side * 0.33,
-    0.56,
-    0.55,
-    headGroup
-  );
-
-  fringe.rotation.z = side * 0.48;
-  fringe.scale.z = 0.56;
-}
-
-/* =========================================================
-   REGENBOGEN AUF DEM SHIRT
-   ========================================================= */
-
-const rainbowColors = [
-  0xf05b72,
-  0xffa14d,
-  0xffd65a,
-  0x77c96b,
-  0x62b9e8,
-  0x9a74d6
-];
-
-rainbowColors.forEach((color, index) => {
-  const arc = emiliaMesh(
-    new THREE.TorusGeometry(
-      0.31 - index * 0.037,
-      0.022,
-      7,
-      24,
-      Math.PI
-    ),
-    mat(color),
-    0,
-    2.35 - index * 0.012,
-    0.57 + index * 0.006
-  );
-
-  arc.rotation.z = Math.PI;
-});
-
-/* Kleine Wolken */
-for (const x of [-0.31, 0.31]) {
-  emiliaMesh(
-    new THREE.SphereGeometry(0.08, 12, 10),
-    white,
-    x,
-    2.29,
-    0.61
-  );
-}
-
-/* =========================================================
-   ARME UND HÄNDE
-   ========================================================= */
-
 const arms = [];
-
-for (const x of [-0.79, 0.79]) {
-  const armGroup = new THREE.Group();
-  armGroup.position.set(x, 2.62, 0);
-  player.add(armGroup);
-
-  /* Kurzer Ärmel */
-  const sleeve = emiliaMesh(
-    new THREE.CapsuleGeometry(0.19, 0.35, 7, 14),
-    shirtMat,
-    0,
-    -0.12,
-    0,
-    armGroup
-  );
-
-  /* Unterarm */
-  const arm = emiliaMesh(
-    new THREE.CapsuleGeometry(0.15, 0.82, 7, 14),
-    skinMat,
-    0,
-    -0.71,
-    0,
-    armGroup
-  );
-
-  /* Hand */
-  const hand = emiliaMesh(
-    new THREE.SphereGeometry(0.18, 18, 14),
-    skinMat,
-    0,
-    -1.25,
-    0.02,
-    armGroup
-  );
-
-  hand.scale.set(0.72, 1, 0.62);
-
-  /* Kleine Fingerandeutung */
-  for (let i = -1; i <= 1; i++) {
-    const finger = emiliaMesh(
-      new THREE.CapsuleGeometry(0.025, 0.10, 4, 8),
-      skinMat,
-      i * 0.055,
-      -1.38,
-      0.04,
-      armGroup
-    );
-  }
-
-  arms.push(armGroup);
-}
-
-/* =========================================================
-   JEANSBEINE UND ROSA SNEAKER
-   ========================================================= */
-
 const legs = [];
-
-for (const x of [-0.31, 0.31]) {
-  const legGroup = new THREE.Group();
-  legGroup.position.set(x, 0.95, 0);
-  player.add(legGroup);
-
-  /* Jeansbein */
-  const leg = emiliaMesh(
-    new THREE.CapsuleGeometry(0.27, 1.03, 8, 16),
-    denimMat,
-    0,
-    -0.23,
-    0,
-    legGroup
-  );
-
-  leg.scale.z = 0.82;
-
-  /* Jeansnaht */
-  const seam = emiliaMesh(
-    new THREE.CapsuleGeometry(0.018, 0.75, 4, 8),
-    denimDarkMat,
-    0,
-    -0.19,
-    0.26,
-    legGroup
-  );
-
-  /* Angedeutete Hosentasche */
-  const pocket = emiliaMesh(
-    new THREE.TorusGeometry(0.11, 0.018, 6, 18, Math.PI),
-    denimDarkMat,
-    0,
-    0.17,
-    0.27,
-    legGroup
-  );
-
-  pocket.rotation.z = Math.PI;
-
-  /* Rosa Sneaker */
-  const shoe = emiliaMesh(
-    new THREE.CapsuleGeometry(0.25, 0.38, 7, 14),
-    pinkMat,
-    0,
-    -0.97,
-    0.15,
-    legGroup
-  );
-
-  shoe.rotation.x = Math.PI / 2;
-  shoe.scale.set(1.12, 1.02, 1.4);
-
-  /* Weiße Sohle */
-  const sole = emiliaMesh(
-    new THREE.BoxGeometry(0.55, 0.14, 0.82),
-    shoeWhiteMat,
-    0,
-    -1.13,
-    0.20,
-    legGroup
-  );
-
-  sole.geometry.translate(0, 0, 0);
-
-  /* Schnürsenkel */
-  for (let i = 0; i < 3; i++) {
-    const lace = emiliaMesh(
-      new THREE.BoxGeometry(0.33, 0.025, 0.035),
-      white,
-      0,
-      -0.93 + i * 0.08,
-      0.51,
-      legGroup
-    );
-  }
-
-  legs.push(legGroup);
-}
-
-/* =========================================================
-   KLEINE DETAILS
-   ========================================================= */
-
-/* Shirt-Kragen */
-const collar = emiliaMesh(
-  new THREE.TorusGeometry(0.27, 0.035, 8, 24, Math.PI),
-  lightPinkMat,
-  0,
-  2.93,
-  0.38
-);
-collar.rotation.z = Math.PI;
-
-/* Jeansknopf */
-emiliaMesh(
-  new THREE.SphereGeometry(0.055, 12, 10),
-  goldMat,
-  0,
-  1.31,
-  0.51
-);
-
-/* Jeans-Mittelnaht */
-emiliaMesh(
-  new THREE.BoxGeometry(0.025, 0.32, 0.025),
-  denimDarkMat,
-  0,
-  1.08,
-  0.50
-);
-
-/* =========================================================
-   SPIELFIGUR PLATZIEREN
-   ========================================================= */
 
 player.position.set(0, 0, 15);
 player.rotation.y = 0;
-
 scene.add(player);
-  const polly=new THREE.Group();
+
+const emiliaLoader = new GLTFLoader();
+
+emiliaLoader.load(
+  './emilia.glb',
+
+  gltf => {
+    const emiliaModel = gltf.scene;
+console.log('Animationen in Emilia:', gltf.animations);
+    emiliaModel.traverse(object => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    const box = new THREE.Box3().setFromObject(emiliaModel);
+    const size = new THREE.Vector3();
+    const center = new THREE.Vector3();
+
+    box.getSize(size);
+    box.getCenter(center);
+
+    const targetHeight = 4.2;
+    const scale = targetHeight / size.y;
+
+    emiliaModel.scale.setScalar(scale);
+
+    const scaledBox = new THREE.Box3().setFromObject(emiliaModel);
+    const scaledCenter = new THREE.Vector3();
+    scaledBox.getCenter(scaledCenter);
+
+    emiliaModel.position.x -= scaledCenter.x;
+    emiliaModel.position.z -= scaledCenter.z;
+    emiliaModel.position.y -= scaledBox.min.y;
+
+    player.add(emiliaModel);
+
+    console.log('Emilia wurde erfolgreich geladen ❤️');
+  },
+
+  progress => {
+    if (progress.total) {
+      const percent = Math.round(
+        (progress.loaded / progress.total) * 100
+      );
+      console.log(`Emilia lädt: ${percent}%`);
+    }
+  },
+
+  error => {
+    console.error('Emilia konnte nicht geladen werden:', error);
+  }
+);
+   const polly=new THREE.Group();
   const pb=new THREE.Mesh(new THREE.SphereGeometry(1.05,20,16),mat(0xd6a47b));
   pb.scale.set(1.2,.8,1.45);pb.position.y=1.05;polly.add(pb);
   const ph=new THREE.Mesh(new THREE.SphereGeometry(.82,20,16),mat(0xe2b68f));
@@ -1318,12 +836,11 @@ function animate(){
       velocity.z=THREE.MathUtils.lerp(velocity.z,z*8,.18);
       player.rotation.y=Math.atan2(velocity.x,velocity.z);
       walk+=dt*10;
-      body.position.y=2.25+Math.sin(walk)*.07;
-      legs[0].rotation.x=Math.sin(walk)*.45;
-      legs[1].rotation.x=-Math.sin(walk)*.45;
-      arms[0].rotation.x=-Math.sin(walk)*.35;
-      arms[1].rotation.x=Math.sin(walk)*.35;
+      player.position.y = Math.abs(Math.sin(walk)) * 0.08;
+player.rotation.z = Math.sin(walk) * 0.015;
     }else{
+      player.position.y = THREE.MathUtils.lerp(player.position.y, 0, 0.2);
+player.rotation.z = THREE.MathUtils.lerp(player.rotation.z, 0, 0.2);
       velocity.x=THREE.MathUtils.lerp(velocity.x,0,.2);
       velocity.z=THREE.MathUtils.lerp(velocity.z,0,.2);
       legs.forEach(l=>l.rotation.x*=.82);
