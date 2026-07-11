@@ -781,9 +781,9 @@ function roomBox(width, height, depth, color, x, y, z) {
 roomBox(18, 0.25, 16, 0xf2d7c9, 0, -0.12, 0);
 
 /* Wände */
-roomBox(18, 6, 0.3, 0xffe7f3, 0, 3, -8);
-roomBox(0.3, 6, 16, 0xffeef7, -9, 3, 0);
-roomBox(0.3, 6, 16, 0xffeef7, 9, 3, 0);
+const backWall = roomBox(18, 6, 0.3, 0xffe7f3, 0, 3, -8);
+const leftWall = roomBox(0.3, 6, 16, 0xffeef7, -9, 3, 0);
+const rightWall = roomBox(0.3, 6, 16, 0xffeef7, 9, 3, 0);
 
 /* Teppich */
 const bedroomRug = new THREE.Mesh(
@@ -1068,7 +1068,34 @@ function animate(){
     const target=player.position.clone().add(behind);
     camera.position.lerp(target,.07);
     camera.lookAt(player.position.x,2.2,player.position.z);
+// Im Innenraum störende Wände automatisch ausblenden
+if (isInsideHouse) {
+  // Erst alle Wände sichtbar machen
+  backWall.visible = true;
+  leftWall.visible = true;
+  rightWall.visible = true;
 
+  // Kamera relativ zum Mittelpunkt des Zimmers prüfen
+  const roomCenterX = 0;
+  const roomCenterZ = 200;
+
+  if (camera.position.z < roomCenterZ - 1) {
+    backWall.visible = false;
+  }
+
+  if (camera.position.x < roomCenterX - 1) {
+    leftWall.visible = false;
+  }
+
+  if (camera.position.x > roomCenterX + 1) {
+    rightWall.visible = false;
+  }
+} else {
+  // Draußen bzw. beim Verlassen wieder alle Wände zeigen
+  backWall.visible = true;
+  leftWall.visible = true;
+  rightWall.visible = true;
+}
     zones();
     renderer.render(scene,camera);
   }
