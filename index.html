@@ -645,6 +645,106 @@ scene.add(player);
     const ear=new THREE.Mesh(new THREE.ConeGeometry(.28,.75,12),mat(0x8d5d43));
     ear.position.set(x,2.25,.92);ear.rotation.z=x<0?.3:-.3;polly.add(ear);
   }
+  /* Pollys Beine */
+for (const x of [-0.58, 0.58]) {
+  for (const z of [-0.48, 0.48]) {
+    const pollyLeg = new THREE.Mesh(
+      new THREE.CapsuleGeometry(0.17, 0.38, 6, 12),
+      mat(0xd6a47b)
+    );
+    pollyLeg.position.set(x, 0.34, z);
+    pollyLeg.castShadow = true;
+    polly.add(pollyLeg);
+
+    const pollyPaw = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 14, 10),
+      mat(0xc78f68)
+    );
+    pollyPaw.scale.set(1, 0.55, 1.2);
+    pollyPaw.position.set(x, 0.09, z + 0.06);
+    polly.add(pollyPaw);
+  }
+}
+
+/* Pollys Schnauze */
+const pollyMuzzle = new THREE.Mesh(
+  new THREE.SphereGeometry(0.43, 20, 16),
+  mat(0xe7bd98)
+);
+pollyMuzzle.scale.set(1.15, 0.7, 0.72);
+pollyMuzzle.position.set(0, 1.48, 1.62);
+polly.add(pollyMuzzle);
+
+/* Pollys Nase */
+const pollyNose = new THREE.Mesh(
+  new THREE.SphereGeometry(0.16, 16, 12),
+  mat(0x2b211f)
+);
+pollyNose.scale.set(1.15, 0.8, 0.65);
+pollyNose.position.set(0, 1.62, 1.91);
+polly.add(pollyNose);
+
+/* Pollys Augen */
+for (const x of [-0.27, 0.27]) {
+  const pollyEyeWhite = new THREE.Mesh(
+    new THREE.SphereGeometry(0.13, 16, 12),
+    mat(0xffffff)
+  );
+  pollyEyeWhite.scale.set(1, 1.15, 0.5);
+  pollyEyeWhite.position.set(x, 1.87, 1.63);
+  polly.add(pollyEyeWhite);
+
+  const pollyEye = new THREE.Mesh(
+    new THREE.SphereGeometry(0.075, 14, 10),
+    mat(0x241b18)
+  );
+  pollyEye.position.set(x, 1.86, 1.73);
+  polly.add(pollyEye);
+
+  const pollyEyeShine = new THREE.Mesh(
+    new THREE.SphereGeometry(0.025, 10, 8),
+    mat(0xffffff)
+  );
+  pollyEyeShine.position.set(x - 0.02, 1.91, 1.79);
+  polly.add(pollyEyeShine);
+}
+
+/* Pollys Mund */
+const pollyMouth = new THREE.Mesh(
+  new THREE.TorusGeometry(0.14, 0.025, 8, 18, Math.PI),
+  mat(0x5e302d)
+);
+pollyMouth.position.set(0, 1.4, 1.94);
+pollyMouth.rotation.z = Math.PI;
+polly.add(pollyMouth);
+
+/* Pollys Halsband */
+const pollyCollar = new THREE.Mesh(
+  new THREE.TorusGeometry(0.53, 0.07, 10, 24),
+  mat(0xec74bc)
+);
+pollyCollar.position.set(0, 1.28, 0.62);
+pollyCollar.rotation.x = Math.PI / 2;
+polly.add(pollyCollar);
+
+/* Herzanhänger */
+const pollyTag = new THREE.Mesh(
+  new THREE.SphereGeometry(0.1, 14, 10),
+  mat(0xffd166)
+);
+pollyTag.scale.set(0.85, 1.05, 0.45);
+pollyTag.position.set(0, 1.12, 1.15);
+polly.add(pollyTag);
+
+/* Kleines Schwänzchen */
+const pollyTail = new THREE.Mesh(
+  new THREE.TorusGeometry(0.2, 0.07, 8, 16, Math.PI * 1.35),
+  mat(0xd6a47b)
+);
+pollyTail.position.set(0, 1.15, -1.42);
+pollyTail.rotation.x = Math.PI / 2;
+pollyTail.rotation.z = 0.6;
+polly.add(pollyTail);
   polly.position.set(-12,0,-15);scene.add(polly);
 
   const mama=new THREE.Group();
