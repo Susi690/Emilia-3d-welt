@@ -532,14 +532,69 @@ pollyLoader.load(
     console.error('Polly konnte nicht geladen werden:', error);
   }
 );
-  const mama=new THREE.Group();
-  const mamaBody=new THREE.Mesh(new THREE.CapsuleGeometry(.75,1.45,6,12),mat(0x8d68d6));
-  mamaBody.position.y=2.25;mama.add(mamaBody);
-  const mamaHead=new THREE.Mesh(new THREE.SphereGeometry(.8,24,18),mat(0xf0c1a0));
-  mamaHead.position.y=3.85;mama.add(mamaHead);
-  const mamaHair=new THREE.Mesh(new THREE.CapsuleGeometry(.73,.75,6,12),mat(0x4a2c25));
-  mamaHair.position.set(0,3.8,-.55);mama.add(mamaHair);
-  mama.position.set(12,0,-11);scene.add(mama);
+/* =========================================================
+   ECHTE 3D-MAMA AUS DER GLB-DATEI
+   ========================================================= */
+
+const mama = new THREE.Group();
+
+mama.position.set(8, 0, -8);
+mama.rotation.y = 0;
+scene.add(mama);
+
+const mamaLoader = new GLTFLoader();
+
+mamaLoader.load(
+  './mama.glb',
+
+  gltf => {
+    const mamaModel = gltf.scene;
+
+    mamaModel.traverse(object => {
+      if (object.isMesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      }
+    });
+
+    const box = new THREE.Box3().setFromObject(mamaModel);
+    const size = new THREE.Vector3();
+
+    box.getSize(size);
+
+    const targetHeight = 5.4;
+    const scale = targetHeight / size.y;
+
+    mamaModel.scale.setScalar(scale);
+
+    const scaledBox = new THREE.Box3().setFromObject(mamaModel);
+    const scaledCenter = new THREE.Vector3();
+
+    scaledBox.getCenter(scaledCenter);
+
+    mamaModel.position.x -= scaledCenter.x;
+    mamaModel.position.z -= scaledCenter.z;
+    mamaModel.position.y -= scaledBox.min.y;
+
+    mama.add(mamaModel);
+
+    console.log('Mama wurde erfolgreich geladen ❤️');
+  },
+
+  progress => {
+    if (progress.total) {
+      const percent = Math.round(
+        (progress.loaded / progress.total) * 100
+      );
+
+      console.log(`Mama lädt: ${percent}%`);
+    }
+  },
+
+  error => {
+    console.error('Mama konnte nicht geladen werden:', error);
+  }
+);
 /* ==============================
    EMILIAS TRAUMHAUS – INNENRAUM
    ============================== */
@@ -884,12 +939,23 @@ function animate(){
     requestAnimationFrame(animate);
     const dt=Math.min(clock.getDelta(),.04);
 
-    let x=joy.x+(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0);
-    let z=joy.y+(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);
-    const len=Math.hypot(x,z);
+const inputX =
+  (keys.d || keys.arrowright ? 1 : 0) -
+  (keys.a || keys.arrowleft ? 1 : 0);
 
-    if(len>.08){
-      x/=Math.max(1,len);z/=Math.max(1,len);
+const inputZ =
+  (keys.s || keys.arrowdown ? 1 : 0) -
+  (keys.w || keys.arrowup ? 1 : 0);
+
+const useKeyboard = inputX !== 0 || inputZ !== 0;
+
+let x = useKeyboard ? inputX : joy.x;
+let z = useKeyboard ? inputZ : joy.y;
+
+const len = Math.hypot(x, z);
+
+if(len>.08){
+    x/=Math.max(1,len);z/=Math.max(1,len);
       velocity.x=THREE.MathUtils.lerp(velocity.x,x*8,.18);
       velocity.z=THREE.MathUtils.lerp(velocity.z,z*8,.18);
       player.rotation.y=Math.atan2(velocity.x,velocity.z);
